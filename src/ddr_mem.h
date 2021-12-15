@@ -35,7 +35,7 @@
 #include "stats.h"
 
 #include <fstream>
-
+#include <mutex>
 
 
 /* Helper data structures */
@@ -273,6 +273,7 @@ class DDRMemory : public MemObject {
 
         // Bound phase interface
         uint64_t access(MemReq& req);
+        uint64_t access_ndp(MemReq& req);
 
         // Weave phase interface
         void enqueue(DDRMemoryAccEvent* ev, uint64_t cycle);
@@ -293,6 +294,11 @@ class DDRMemory : public MemObject {
         void initTech(const char* tech);
 
         ofstream traceFile;
+        uint64_t traceFileCounter;
+        uint64_t req_counter;
+        static std::mutex mtx_traces;
+
+
 };
 
 

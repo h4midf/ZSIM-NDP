@@ -62,7 +62,9 @@ class WeaveMD1Memory : public MD1Memory {
             preDelay = zeroLoadLatency/2;
             postDelay = zeroLoadLatency - preDelay;
         }
-
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         uint64_t access(MemReq& req) {
             uint64_t realRespCycle = MD1Memory::access(req);
             uint32_t realLatency = realRespCycle - req.cycle;
@@ -98,7 +100,9 @@ class WeaveSimpleMemory : public SimpleMemory {
             preDelay = zeroLoadLatency/2;
             postDelay = zeroLoadLatency - preDelay;
         }
-
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         uint64_t access(MemReq& req) {
             uint64_t realRespCycle = SimpleMemory::access(req);
             uint32_t realLatency = realRespCycle - req.cycle;

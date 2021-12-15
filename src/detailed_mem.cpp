@@ -73,6 +73,7 @@ MemRankBase::~MemRankBase() {
 }
 
 void MemRankBase::access(uint64_t accessCycle, uint64_t issuedCycle, uint32_t row, uint32_t col, uint32_t bank, MemAccessType type) {
+    panic("Shoudn't come here\n");
     // If the difference between read latency and write latency is large,
     // a latter access may overtake the prior one by the scheduling in intraIssueCycleble.
     // assert(lastAccessCycle < accessCycle);
@@ -1100,6 +1101,7 @@ void MemControllerBase::TickScheduler(uint64_t sysCycle) {
 }
 
 uint64_t MemControllerBase::access(MemReq& req) {
+    panic("Shoudn't come here\n");
     switch (req.type) {
         case PUTS:
         case PUTX:

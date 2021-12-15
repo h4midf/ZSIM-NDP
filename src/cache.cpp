@@ -58,6 +58,10 @@ void Cache::initCacheStats(AggregateStat* cacheStat) {
     rp->initStats(cacheStat);
 }
 
+uint64_t Cache::access_ndp(MemReq& req) {
+    printf("Shouldn't come here!\n");
+}
+
 uint64_t Cache::access(MemReq& req) {
     uint64_t respCycle = req.cycle;
     bool skipAccess = cc->startAccess(req); //may need to skip access due to races (NOTE: may change req.type!)

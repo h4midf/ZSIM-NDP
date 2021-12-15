@@ -35,6 +35,11 @@
 #include "zsim.h"
 
 #include <fstream>
+#include <string> 
+#include <mutex>
+
+
+
 using namespace std;
 
 //#define DEBUG(args...) info(args)
@@ -227,8 +232,10 @@ DDRMemory::DDRMemory(uint32_t _lineSize, uint32_t _colSize, uint32_t _ranksPerCh
     nextSchedEvent = nullptr;
     eventFreelist = nullptr;
 
-    traceFile.open("traceFile.txt");
-
+    traceFileCounter = 0;
+    string traceFileName = "traceFile" + std::to_string(traceFileCounter) + ".txt";
+    traceFile.open(traceFileName);
+    req_counter = 0;
 }
 
 void DDRMemory::initStats(AggregateStat* parentStat) {
@@ -245,11 +252,21 @@ void DDRMemory::initStats(AggregateStat* parentStat) {
 }
 
 /* Bound phase interface */
+std::mutex DDRMemory::mtx_traces;
 
-uint64_t DDRMemory::access(MemReq& req) {
+uint64_t DDRMemory::access_ndp(MemReq& req) {
+    req_counter++;
+    if(req_counter > 10000000){
+        mtx_traces.lock();
+        traceFileCounter++;
+        string traceFileName = "traceFile" + std::to_string(traceFileCounter) + ".txt";
+        traceFile.open(traceFileName);
+        req_counter = 0;
+        mtx_traces.unlock();
+    }
     switch (req.type) {
         case PUTS:
-            traceFile << req.lineAddr <<  " WRITE " << req.cycle <<  endl;
+            traceFile << req.lineAddr <<  " READ " << req.cycle <<  endl;
         case PUTX:
             *req.state = I;
             traceFile << req.lineAddr <<  " WRITE " << req.cycle <<  endl;
@@ -259,7 +276,57 @@ uint64_t DDRMemory::access(MemReq& req) {
             traceFile << req.lineAddr <<  " READ " << req.cycle <<  endl;
             break;
         case GETX:
+            traceFile << req.lineAddr <<  " WRITE " << req.cycle <<  endl;
+            *req.state = M;
+            break;
+
+        default: panic("!?");
+    }
+
+    if (req.type == PUTS) {
+        return req.cycle; //must return an absolute value, 0 latency
+    } else {
+        bool isWrite = (req.type == PUTX);
+        uint64_t respCycle = req.cycle + (isWrite? minWrLatency : minRdLatency);
+        if (zinfo->eventRecorders[req.srcId]) {
+            DDRMemoryAccEvent* memEv = new (zinfo->eventRecorders[req.srcId]) DDRMemoryAccEvent(this,
+                    isWrite, req.lineAddr, domain, preDelay, isWrite? postDelayWr : postDelayRd);
+            memEv->setMinStartCycle(req.cycle);
+            TimingRecord tr = {req.lineAddr, req.cycle, respCycle, req.type, memEv, memEv};
+            zinfo->eventRecorders[req.srcId]->pushRecord(tr);
+        }
+        //info("Access to %lx at %ld, %ld latency", req.lineAddr, req.cycle, minLatency);
+        return respCycle;
+    }
+}
+
+uint64_t DDRMemory::access(MemReq& req) {
+    
+    req_counter++;
+    if(req_counter > 10000000){
+        mtx_traces.lock();
+
+        traceFileCounter++;
+        string traceFileName = "traceFile" + std::to_string(traceFileCounter) + ".txt";
+        traceFile.open(traceFileName);
+        req_counter = 0;
+        mtx_traces.unlock();
+
+    }
+
+    switch (req.type) {
+        case PUTS:
             traceFile << req.lineAddr <<  " READ " << req.cycle <<  endl;
+        case PUTX:
+            *req.state = I;
+            traceFile << req.lineAddr <<  " WRITE " << req.cycle <<  endl;
+            break;
+        case GETS:
+            *req.state = req.is(MemReq::NOEXCL)? S : E;
+            traceFile << req.lineAddr <<  " READ " << req.cycle <<  endl;
+            break;
+        case GETX:
+            traceFile << req.lineAddr <<  " WRITE " << req.cycle <<  endl;
             *req.state = M;
             break;
 
@@ -675,7 +742,37 @@ void DDRMemory::initTech(const char* techName) {
     // tBL's below are for 64-byte lines; we adjust as needed
 
     // Please keep this orderly; go from faster to slower technologies
-    if (tech == "DDR3-1333-CL10") {
+    if (tech == "HBM2_8Gb_x128_ndp") {
+        // from DRAMSim2/ini/DDR3_micron_16M_8B_x4_sg15.ini (Micron)
+        tCK = 1;  // ns; all other in mem cycles
+        tBL = 4;
+        tCL = 1;
+        tRCD = 1;
+        tRTP = 4;
+        tRP = 2;
+        tRRD = 4;
+        tRAS = 2;
+        tFAW = 2;
+        tWTR = 1;
+        tWR = 2;
+        tRFC = 260;
+        tREFI = 3900;
+    } else if (tech == "HBM2_8Gb_x128") {
+        // from DRAMSim2/ini/DDR3_micron_16M_8B_x4_sg15.ini (Micron)
+        tCK = 1;  // ns; all other in mem cycles
+        tBL = 4;
+        tCL = 14;
+        tRCD = 14;
+        tRTP = 4;
+        tRP = 14;
+        tRRD = 4;
+        tRAS = 34;
+        tFAW = 30;
+        tWTR = 6;
+        tWR = 16;
+        tRFC = 260;
+        tREFI = 3900;
+    } else if (tech == "DDR3-1333-CL10") {
         // from DRAMSim2/ini/DDR3_micron_16M_8B_x4_sg15.ini (Micron)
         tCK = 1.5;  // ns; all other in mem cycles
         tBL = 4;

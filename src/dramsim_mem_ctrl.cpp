@@ -93,6 +93,8 @@ void DRAMSimMemory::initStats(AggregateStat* parentStat) {
 }
 
 uint64_t DRAMSimMemory::access(MemReq& req) {
+    panic("Shoudn't come here\n");
+
     switch (req.type) {
         case PUTS:
         case PUTX:

@@ -682,7 +682,7 @@ static void InitSystem(Config& config) {
 
                     //Build the core
                     if (type == "Simple") {
-                        core = new (&simpleCores[j]) SimpleCore(ic, dc, name);
+                        core = new (&simpleCores[j]) SimpleCore(ic, dc, name, mems[0]);
                     } else if (type == "Timing") {
                         uint32_t domain = j*zinfo->numDomains/cores;
                         TimingCore* tcore = new (&timingCores[j]) TimingCore(ic, dc, domain, name);

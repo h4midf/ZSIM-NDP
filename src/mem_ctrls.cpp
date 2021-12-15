@@ -29,6 +29,7 @@
 #include "zsim.h"
 
 uint64_t SimpleMemory::access(MemReq& req) {
+    panic("Shoudn't come here\n");
     switch (req.type) {
         case PUTS:
         case PUTX:
@@ -63,6 +64,7 @@ uint64_t SimpleMemory::access(MemReq& req) {
 MD1Memory::MD1Memory(uint32_t requestSize, uint32_t megacyclesPerSecond, uint32_t megabytesPerSecond, uint32_t _zeroLoadLatency, g_string& _name)
     : zeroLoadLatency(_zeroLoadLatency), name(_name)
 {
+    panic("Shoudn't come here\n");
     lastPhase = 0;
 
     double bytesPerCycle = ((double)megabytesPerSecond)/((double)megacyclesPerSecond);

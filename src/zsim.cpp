@@ -490,7 +490,7 @@ VOID EndOfPhaseActions() {
         info("Synced fast-forwarding done, resuming simulation");
     }
 
-    CheckForTermination();
+    // CheckForTermination();
     zinfo->contentionSim->simulatePhase(zinfo->globPhaseCycles + zinfo->phaseLength);
     zinfo->eventQueue->tick();
     zinfo->profSimTime->transition(PROF_BOUND);

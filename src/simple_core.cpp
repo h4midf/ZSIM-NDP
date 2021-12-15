@@ -30,6 +30,9 @@
 SimpleCore::SimpleCore(FilterCache* _l1i, FilterCache* _l1d, g_string& _name) : Core(_name), l1i(_l1i), l1d(_l1d), instrs(0), curCycle(0), haltedCycles(0) {
 }
 
+SimpleCore::SimpleCore(FilterCache* _l1i, FilterCache* _l1d, g_string& _name, MemObject* _ndp_mem) : Core(_name), l1i(_l1i), l1d(_l1d), instrs(0), curCycle(0), haltedCycles(0), ndp_mem(_ndp_mem) {
+}
+
 void SimpleCore::initStats(AggregateStat* parentStat) {
     AggregateStat* coreStat = new AggregateStat();
     coreStat->init(name.c_str(), "Core stats");
@@ -48,13 +51,14 @@ uint64_t SimpleCore::getPhaseCycles() const {
 }
 
 void SimpleCore::load(Address addr) {
-    // curCycle = l1d->load(addr, curCycle);
-    curCycle = l1d->load_ndp(addr, curCycle);
+    curCycle = l1d->load(addr, curCycle);
+    // curCycle = l1d->load_ndp(addr, curCycle, ndp_mem);
 
 }
 
 void SimpleCore::store(Address addr) {
-    curCycle = l1d->store_ndp(addr, curCycle);
+    curCycle = l1d->store(addr, curCycle);
+    // curCycle = l1d->store_ndp(addr, curCycle, ndp_mem);
 }
 
 void SimpleCore::bbl(Address bblAddr, BblInfo* bblInfo) {
@@ -66,6 +70,7 @@ void SimpleCore::bbl(Address bblAddr, BblInfo* bblInfo) {
     Address endBblAddr = bblAddr + bblInfo->bytes;
     for (Address fetchAddr = bblAddr; fetchAddr < endBblAddr; fetchAddr+=(1 << lineBits)) {
         curCycle = l1i->load(fetchAddr, curCycle);
+        // curCycle = l1i->load_ndp(fetchAddr, curCycle, ndp_mem);
     }
 }
 

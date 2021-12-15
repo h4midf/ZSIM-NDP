@@ -69,7 +69,9 @@ class DRAMSimMemory : public MemObject { //one DRAMSim controller
 
         // Record accesses
         uint64_t access(MemReq& req);
-
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         // Event-driven simulation (phase 2)
         uint32_t tick(uint64_t cycle);
         void enqueue(DRAMSimAccEvent* ev, uint64_t cycle);
@@ -89,6 +91,9 @@ class SplitAddrMemory : public MemObject {
     public:
         SplitAddrMemory(const g_vector<MemObject*>& _mems, const char* _name) : mems(_mems), name(_name) {}
 
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         uint64_t access(MemReq& req) {
             Address addr = req.lineAddr;
             uint32_t mem = addr % mems.size();

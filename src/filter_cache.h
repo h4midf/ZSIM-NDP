@@ -111,17 +111,19 @@ class FilterCache : public Cache {
             }
         }
 
-        inline uint64_t load_ndp(Address vAddr, uint64_t curCycle){
+        inline uint64_t load_ndp(Address vAddr, uint64_t curCycle, MemObject* ndp_mem){
+            panic("Shouldn't come here\n");
             Address vLineAddr = vAddr >> lineBits;
             uint32_t idx = vLineAddr & setMask;
-            return replace_ndp(vLineAddr, idx, true, curCycle);
+            return replace_ndp(vLineAddr, idx, true, curCycle, ndp_mem);
 
         }
 
-        inline uint64_t store_ndp(Address vAddr, uint64_t curCycle) {
+        inline uint64_t store_ndp(Address vAddr, uint64_t curCycle, MemObject* ndp_mem) {
+            panic("Shouldn't come here\n");
             Address vLineAddr = vAddr >> lineBits;
             uint32_t idx = vLineAddr & setMask;
-            return replace_ndp(vLineAddr, idx, false, curCycle);
+            return replace_ndp(vLineAddr, idx, false, curCycle, ndp_mem);
         }
 
         inline uint64_t store(Address vAddr, uint64_t curCycle) {
@@ -138,12 +140,12 @@ class FilterCache : public Cache {
             }
         }
 
-        uint64_t replace_ndp(Address vLineAddr, uint32_t idx, bool isLoad, uint64_t curCycle) {
+        uint64_t replace_ndp(Address vLineAddr, uint32_t idx, bool isLoad, uint64_t curCycle, MemObject* ndp_mem) {
             Address pLineAddr = procMask | vLineAddr;
             MESIState dummyState = MESIState::I;
             futex_lock(&filterLock);
             MemReq req = {pLineAddr, isLoad? GETS : GETX, 0, &dummyState, curCycle, &filterLock, dummyState, srcId, reqFlags};
-            uint64_t respCycle  = access(req);
+            uint64_t respCycle  = ndp_mem->access_ndp(req);
             futex_unlock(&filterLock);
             return respCycle;
         }

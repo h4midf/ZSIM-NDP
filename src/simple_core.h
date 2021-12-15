@@ -44,8 +44,12 @@ class SimpleCore : public Core {
         uint64_t phaseEndCycle; //next stopping point
         uint64_t haltedCycles;
 
+
+        MemObject* ndp_mem;
+
     public:
         SimpleCore(FilterCache* _l1i, FilterCache* _l1d, g_string& _name);
+        SimpleCore(FilterCache* _l1i, FilterCache* _l1d, g_string& _name, MemObject* _ndp_mem);
         void initStats(AggregateStat* parentStat);
 
         uint64_t getInstrs() const {return instrs;}

@@ -39,7 +39,9 @@ class SimpleMemory : public MemObject {
 
     public:
         uint64_t access(MemReq& req);
-
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         const char* getName() {return name.c_str();}
 
         SimpleMemory(uint32_t _latency, g_string& _name) : name(_name), latency(_latency) {}
@@ -90,6 +92,9 @@ class MD1Memory : public MemObject {
 
         //uint32_t access(Address lineAddr, AccessType type, uint32_t childId, MESIState* state /*both input and output*/, MESIState initialState, lock_t* childLock);
         uint64_t access(MemReq& req);
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
 
         const char* getName() {return name.c_str();}
 

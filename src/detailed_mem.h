@@ -323,6 +323,9 @@ class MemControllerBase : public MemObject {
         const char* getName() { return name.c_str(); }
         void enqueue(MemAccessEventBase* ev, uint64_t cycle);
         uint64_t access(MemReq& req);
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
         uint32_t tick(uint64_t sysCycle);
         void initStats(AggregateStat* parentStat);
         void updateStats(void);

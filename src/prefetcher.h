@@ -110,6 +110,11 @@ class StreamPrefetcher : public BaseCache {
         void setChildren(const g_vector<BaseCache*>& children, Network* network);
 
         uint64_t access(MemReq& req);
+
+        uint64_t access_ndp(MemReq& req) {
+            panic("Shouldn't come here\n");
+        }
+        
         uint64_t invalidate(const InvReq& req);
 };
 
